@@ -17,10 +17,10 @@ static bool paired=false;
 static uint8_t assignedSlot=255;
 static uint32_t managerId=0;
 
-struct Telemetry { uint8_t light, activity, battery; uint16_t co2, tvoc; };
+struct Telemetry { uint8_t light, activity, tempHumidScore, worn; uint16_t co2, tvoc; };
 Telemetry readTelemetry() {
-  // Replace these demo values with sensor reads. Unknown readings use 255/0xFFFF.
-  return {MASK_LIGHT_UNKNOWN, 255, 255, 0xFFFF, 0xFFFF};
+  // Replace these demo values with sensor reads. 255/0xFFFF means unavailable.
+  return {MASK_LIGHT_UNKNOWN, 255, 255, 255, 0xFFFF, 0xFFFF};
 }
 void addTlv(uint8_t type,const uint8_t* value,uint8_t len,size_t& off) {
   if(off+2+len>MASK_NOW_MAX_FRAME) return;
@@ -39,13 +39,15 @@ void finishFrame(size_t off) {
 void sendHello() {
   size_t off=beginFrame(MASK_MSG_PAIR_HELLO);
   addTlv(MASK_TLV_DEVICE_NAME,reinterpret_cast<const uint8_t*>(DEVICE_NAME),strlen(DEVICE_NAME),off);
-  tlv32(MASK_TLV_CAPABILITIES,MASK_CAP_LIGHT|MASK_CAP_MOTION|MASK_CAP_CO2|MASK_CAP_TVOC,off);
+  tlv32(MASK_TLV_CAPABILITIES,MASK_CAP_LIGHT|MASK_CAP_MOTION|MASK_CAP_CO2|MASK_CAP_TVOC|MASK_CAP_TEMP_HUMID_SCORE|MASK_CAP_WORN,off);
   finishFrame(off); esp_now_send(nullptr,packet,off);
 }
 void sendTelemetry() {
   const Telemetry t=readTelemetry(); size_t off=beginFrame(MASK_MSG_TELEMETRY);
-  tlv8(MASK_TLV_LIGHT_CODE,t.light,off); tlv8(MASK_TLV_MOTION_LEVEL,t.activity,off);
-  tlv16(MASK_TLV_CO2_PPM,t.co2,off); tlv16(MASK_TLV_TVOC_PPB,t.tvoc,off); tlv8(MASK_TLV_BATTERY_PERCENT,t.battery,off);
+  addTlv(MASK_TLV_DEVICE_NAME,reinterpret_cast<const uint8_t*>(DEVICE_NAME),strlen(DEVICE_NAME),off);
+  tlv8(MASK_TLV_LIGHT_CODE,t.light,off); tlv8(MASK_TLV_ACTIVITY_LEVEL,t.activity,off);
+  tlv16(MASK_TLV_CO2_PPM,t.co2,off); tlv16(MASK_TLV_TVOC_PPB,t.tvoc,off);
+  tlv8(MASK_TLV_TEMP_HUMID_SCORE,t.tempHumidScore,off); tlv8(MASK_TLV_WORN,t.worn,off);
   finishFrame(off); esp_now_send(MANAGER_MAC,packet,off);
 }
 void onReceive(const uint8_t* mac,const uint8_t* data,int len) {
