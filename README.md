@@ -18,7 +18,7 @@ The protocol has no authentication or encryption in v1. Pair only in a controlle
 
 ## Hardware and setup
 
-See [`docs/wiring.md`](docs/wiring.md) for the ESP32-CAM ↔ TFT and button pin-by-pin wiring, boot cautions, and SD-card conflict.
+See [`wiring.md`](wiring.md) for the ESP32-CAM ↔ TFT and button pin-by-pin wiring, boot cautions, and SD-card conflict.
 
 Use ESP32 boards with ESP-NOW support. Both endpoints must be on the same 2.4 GHz Wi-Fi channel. The manager uses its active AP/router channel; set `MANAGER_CHANNEL` on the node to that channel. Put the manager's station MAC in `MANAGER_MAC` (shown in the manager serial log or router/ESP tools). Open the manager pairing window, then boot the node. The node is added to the first free roster position, up to 12.
 
@@ -26,7 +26,7 @@ For each mask, assign a unique nonzero `DEVICE_ID` and a readable ASCII `DEVICE_
 
 ## Build
 
-Download and extract `mask-esp-now-protocol.zip` to preserve the sketch folders and shared header. Open either sketch folder's `.ino` in Arduino IDE with an ESP32 Arduino core installed, select the target ESP32 board, edit the configuration constants, and upload. The examples use the Arduino ESP32 core 2.x callback signature; on core 3.x update the ESP-NOW receive callback to use `esp_now_recv_info_t` and read the source MAC from `info->src_addr`.
+Download and extract `mask-esp-now-protocol-v1.3.zip` to preserve the sketch folders and shared header. Open either sketch folder's `.ino` in Arduino IDE with an ESP32 Arduino core installed, select the target ESP32 board, edit the configuration constants, and upload. The examples use the Arduino ESP32 core 2.x callback signature; on core 3.x update the ESP-NOW receive callback to use `esp_now_recv_info_t` and read the source MAC from `info->src_addr`.
 
 ## Frame contract
 
